@@ -5,6 +5,8 @@ import pygame
 import random
 import numpy as np
 import sys
+from PIL import Image
+
 
 class SnakeEnv():
 
@@ -35,9 +37,17 @@ class SnakeEnv():
     def reset(self):
         self.__init__()
     
+    def screenshot(self):
+        data = pygame.image.tostring(self.screen, 'RGB')
+        image = Image.frombytes('RGB', (600, 600), data)
+        matrix = np.asarray(image.getdata(), dtype=np.uint8)
+        matrix = (matrix - 128)/(128 - 1)
+        matrix = np.reshape(matrix, (1, 600, 600, 3))
+        return matrix
+    
     def step(self, action):
         d = dict()
-        d['state'] = self.get_state()
+        d['state'] = self.screenshot()
         self.snake.move(action)
         reward = 0
         done = False
@@ -57,7 +67,7 @@ class SnakeEnv():
         d['action'] = action
         d['reward'] = reward
         self.state = self.snake.board
-        d['next_state'] = self.get_state()
+        d['next_state'] = self.screenshot()
         d['done'] = done
         return d
     
@@ -67,9 +77,6 @@ class SnakeEnv():
 
     def render(self, screen):
         screen.fill((0, 0, 0))
-        for i in range(20):
-            pygame.draw.line(screen, (255, 255, 255), (0, 30*i), (600, 30*i))
-            pygame.draw.line(screen, (255, 255, 255), (30*i, 0), (30*i, 600))
         self.food.render()
         self.snake.render()
         pygame.display.flip()

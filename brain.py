@@ -1,15 +1,17 @@
 import numpy as np
+import tensorflow as tf
 from snake_rl.envs.snake_env import SnakeEnv
 import random
 from Game.experience import Experience
 import time
 import pygame
-from net import Net
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from torch.autograd import Variable
+from PIL import Image
+from keras import Sequential
+from keras.layers import Conv2D, Dense, MaxPool2D, Activation, Flatten
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 
 class Brain:
     def __init__(self, learning_rate, discount_rate, eps_start, eps_end, eps_decay, memory_size, batch_size, max_episodes, max_steps, target_update):
@@ -34,9 +36,31 @@ class Brain:
         pygame.display.set_caption("Snake")       
     
     def build_model(self):
-        self.policy_model = Net()
-        self.replay_model = self.policy_model
-    
+        self.policy_model = Sequential()
+        self.policy_model.add(Conv2D(32, (3, 3), padding = 'same', activation = 'relu', data_format = "channels_last", input_shape = (600, 600, 3)))
+        self.policy_model.add(MaxPool2D(pool_size = (2, 2)))
+        self.policy_model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
+        self.policy_model.add(MaxPool2D(pool_size=(2, 2)))
+        self.policy_model.add(Conv2D(128, (3, 3), padding="same", activation="relu"))
+        self.policy_model.add(MaxPool2D(pool_size=(2, 2)))
+        self.policy_model.add(Flatten())
+        self.policy_model.add(Dense(32, activation = "relu"))
+        self.policy_model.add(Dense(5, activation = "softmax"))
+        self.policy_model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
+
+        self.replay_model = Sequential()
+        self.replay_model.add(Conv2D(32, (3, 3), padding = 'same', activation = 'relu', data_format = "channels_last", input_shape = (600, 600, 3)))
+        self.replay_model.add(MaxPool2D(pool_size = (2, 2)))
+        self.replay_model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
+        self.replay_model.add(MaxPool2D(pool_size=(2, 2)))
+        self.replay_model.add(Conv2D(128, (3, 3), padding="same", activation="relu"))
+        self.replay_model.add(MaxPool2D(pool_size=(2, 2)))
+        self.replay_model.add(Flatten())
+        self.replay_model.add(Dense(32, activation = "relu"))
+        self.replay_model.add(Dense(5, activation = "softmax"))
+        self.replay_model.compile(optimizer = 'rmsprop', loss = 'mean_squared_error')
+
+
     def decay_epsilon(self, episode):
         self.current_eps = self.eps_end + (self.eps_start - self.eps_end) * np.exp(-self.eps_decay * episode)
 
@@ -53,16 +77,16 @@ class Brain:
     def can_sample_memory(self):
         return len(self.memory) >= self.batch_size
 
-    #1 forward pass and backprop
-    def fit(self, x, y):
-        self.policy_model.zero_grad()
-        optimizer = optim.Adam(self.policy_model.parameters(), lr = self.learning_rate)
-        criterion = nn.MSELoss()
-        loss = criterion(x, y)
-        loss.backward()
-        optimizer.step()
+    def screenshot(self):
+        data = pygame.image.tostring(self.screen, 'RGB')
+        image = Image.frombytes('RGB', (600, 600), data)
+        matrix = np.asarray(image.getdata(), dtype=np.uint8)
+        matrix = (matrix - 128)/(128 - 1)
+        matrix = np.reshape(matrix, (1, 600, 600, 3))
+        return matrix
 
     def train(self):
+        tf.logging.set_verbosity(tf.logging.ERROR)
         self.build_model()
         for episode in range(self.max_episodes):
             self.current_episode = episode
@@ -70,16 +94,20 @@ class Brain:
             episode_reward = 0
             for timestep in range(self.max_steps):
                 env.render(self.screen)
-                state = env.get_state()
+                print('rendered')
+                state = self.screenshot()
+                #state = env.get_state()
                 action = None
                 epsilon = self.current_eps
                 if epsilon > random.random():
                     action = np.random.choice(env.action_space) #explore
                 else:
                     with torch.no_grad():
-                        values = self.policy_model(Variable(torch.from_numpy(env.get_state()).float())) #exploit
+                        values = self.policy_model.predict(state) #exploit
+                        print(values)
                     action = np.argmax(values)
                 experience = env.step(action)
+                print("made decision")
                 if(experience['done'] == True):
                     episode_reward += experience['reward']
                     break
@@ -88,17 +116,19 @@ class Brain:
                 self.decay_epsilon(episode)
                 if self.can_sample_memory():
                     memory_sample = self.sample_memory()
+                    print("sampling memory")
                     for memory in memory_sample:
                         memstate = memory.state
-                        realq = self.policy_model(Variable(torch.from_numpy(memstate).float()))
+                        realq = self.policy_model.predict(memstate)
                         action = memory.action
                         next_state = memory.next_state
                         reward = memory.reward
-                        max_q = reward + (self.discount_rate * self.replay_model(Variable(torch.from_numpy(next_state).float()))) #bellman equation
-                        self.fit(realq, max_q)
+                        max_q = reward + (self.discount_rate * self.replay_model.predict(next_state)) #bellman equation
+                        self.policy_model.fit(memstate, max_q, verbose = 0)
+                        print("tuned weights")
             print("Episode: ", episode, " Total Reward: ", episode_reward)
             if episode % self.target_update == 0:
-                self.replay_model.set_weights(self.policy_model)
+                self.replay_model.set_weights(self.policy_model.get_weights())
         self.policy_model.save_weights('weights.hdf5')
         pygame.quit()
 
