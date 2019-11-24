@@ -2,12 +2,12 @@ import snake_rl
 import pygame
 import random
 from brain import Brain
-import gym
 from snake_rl.envs.snake_env import SnakeEnv
 import keras
 from keras import models
 from keras.layers import Dense
 from keras import losses
+import os
 """
 env = SnakeEnv()
 
@@ -37,8 +37,7 @@ while not done:
         pygame.quit()
 """
 
-
-
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 learning_rate = 0.5
 discount_rate = 0.99
 eps_start = 1

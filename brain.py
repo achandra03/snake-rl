@@ -79,6 +79,7 @@ class Brain:
     def screenshot(self):
         data = pygame.image.tostring(self.screen, 'RGB')
         image = Image.frombytes('RGB', (600, 600), data)
+        image.save("state.jpg")
         matrix = np.asarray(image.getdata(), dtype=np.uint8)
         matrix = (matrix - 128)/(128 - 1)
         matrix = np.reshape(matrix, (1, 600, 600, 3))
@@ -100,9 +101,7 @@ class Brain:
                 if epsilon > random.random():
                     action = np.random.choice(env.action_space) #explore
                 else:
-                    with torch.no_grad():
-                        values = self.policy_model.predict(state) #exploit
-                        print(values)
+                    values = self.policy_model.predict(state) #exploit
                     action = np.argmax(values)
                 experience = env.step(action)
                 if(experience['done'] == True):
