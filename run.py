@@ -2,7 +2,7 @@ import snake_rl
 import pygame
 import random
 from brain import Brain
-import gym
+import os
 from snake_rl.envs.snake_env import SnakeEnv
 import keras
 from keras import models
@@ -36,9 +36,7 @@ while not done:
       if done == True:
         pygame.quit()
 """
-
-
-
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 learning_rate = 0.5
 discount_rate = 0.99
 eps_start = 1
