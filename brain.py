@@ -5,7 +5,6 @@ import random
 from Game.experience import Experience
 import time
 import pygame
-from torch.autograd import Variable
 from PIL import Image
 from keras import Sequential
 from keras.layers import Conv2D, Dense, MaxPool2D, Activation, Flatten
@@ -94,7 +93,6 @@ class Brain:
             episode_reward = 0
             for timestep in range(self.max_steps):
                 env.render(self.screen)
-                print('rendered')
                 state = self.screenshot()
                 #state = env.get_state()
                 action = None
@@ -107,7 +105,6 @@ class Brain:
                         print(values)
                     action = np.argmax(values)
                 experience = env.step(action)
-                print("made decision")
                 if(experience['done'] == True):
                     episode_reward += experience['reward']
                     break
@@ -116,7 +113,6 @@ class Brain:
                 self.decay_epsilon(episode)
                 if self.can_sample_memory():
                     memory_sample = self.sample_memory()
-                    print("sampling memory")
                     for memory in memory_sample:
                         memstate = memory.state
                         realq = self.policy_model.predict(memstate)
@@ -125,7 +121,6 @@ class Brain:
                         reward = memory.reward
                         max_q = reward + (self.discount_rate * self.replay_model.predict(next_state)) #bellman equation
                         self.policy_model.fit(memstate, max_q, verbose = 0)
-                        print("tuned weights")
             print("Episode: ", episode, " Total Reward: ", episode_reward)
             if episode % self.target_update == 0:
                 self.replay_model.set_weights(self.policy_model.get_weights())
