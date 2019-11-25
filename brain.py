@@ -79,9 +79,11 @@ class Brain:
     def screenshot(self):
         data = pygame.image.tostring(self.screen, 'RGB')
         image = Image.frombytes('RGB', (600, 600), data)
+        image = image.convert('LA')
         matrix = np.asarray(image.getdata(), dtype=np.uint8)
+        print(matrix.shape)
         matrix = (matrix - 128)/(128 - 1)
-        matrix = np.reshape(matrix, (1, 600, 600, 3))
+        matrix = np.reshape(matrix, (1, 600, 600, 2))
         return matrix
 
     def train(self):
