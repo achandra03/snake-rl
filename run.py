@@ -2,12 +2,12 @@ import snake_rl
 import pygame
 import random
 from brain import Brain
-import os
 from snake_rl.envs.snake_env import SnakeEnv
 import keras
 from keras import models
 from keras.layers import Dense
 from keras import losses
+import os
 """
 env = SnakeEnv()
 
