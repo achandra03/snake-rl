@@ -7,7 +7,7 @@ import time
 import pygame
 from PIL import Image
 from keras import Sequential
-from keras.layers import Conv2D, Dense, BatchNormalization, Activation, Flatten
+from keras.layers import Conv2D, Dense, MaxPool2D, Activation, Flatten
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
@@ -37,11 +37,11 @@ class Brain:
     def build_model(self):
         self.policy_model = Sequential()
         self.policy_model.add(Conv2D(32, (3, 3), padding = 'same', activation = 'relu', data_format = "channels_last", input_shape = (600, 600, 3)))
-        self.policy_model.add(BatchNormalization(axis=1))
+        self.policy_model.add(MaxPool2D(pool_size = (2, 2)))
         self.policy_model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
-        self.policy_model.add(BatchNormalization(axis=1))
+        self.policy_model.add(MaxPool2D(pool_size=(2, 2)))
         self.policy_model.add(Conv2D(128, (3, 3), padding="same", activation="relu"))
-        self.policy_model.add(BatchNormalization(axis=1))
+        self.policy_model.add(MaxPool2D(pool_size=(2, 2)))
         self.policy_model.add(Flatten())
         self.policy_model.add(Dense(32, activation = "relu"))
         self.policy_model.add(Dense(5, activation = "softmax"))
@@ -49,11 +49,11 @@ class Brain:
 
         self.replay_model = Sequential()
         self.replay_model.add(Conv2D(32, (3, 3), padding = 'same', activation = 'relu', data_format = "channels_last", input_shape = (600, 600, 3)))
-        self.replay_model.add(BatchNormalization(axis=1))
+        self.replay_model.add(MaxPool2D(pool_size = (2, 2)))
         self.replay_model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
-        self.replay_model.add(BatchNormalization(axis=1))
+        self.replay_model.add(MaxPool2D(pool_size=(2, 2)))
         self.replay_model.add(Conv2D(128, (3, 3), padding="same", activation="relu"))
-        self.replay_model.add(BatchNormalization(axis=1))
+        self.replay_model.add(MaxPool2D(pool_size=(2, 2)))
         self.replay_model.add(Flatten())
         self.replay_model.add(Dense(32, activation = "relu"))
         self.replay_model.add(Dense(5, activation = "softmax"))
@@ -79,11 +79,8 @@ class Brain:
     def screenshot(self):
         data = pygame.image.tostring(self.screen, 'RGB')
         image = Image.frombytes('RGB', (600, 600), data)
-<<<<<<< HEAD
-        image = image.convert('LA')
-=======
->>>>>>> 581a83998f50baecd9777ab553bcec546a4d0afe
         matrix = np.asarray(image.getdata(), dtype=np.uint8)
+        print(matrix.shape)
         matrix = (matrix - 128)/(128 - 1)
         matrix = np.reshape(matrix, (1, 600, 600, 2))
         return matrix
