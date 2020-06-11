@@ -35,13 +35,13 @@ class Snake:
                 self.board[x, y] = 1
 
     def move(self, key):
-        if key == 3 and self.List[0].direction != 3 and self.List[0].direction != 1:
+        if key == 3 and self.List[0].direction != 1:
             self.List[0].direction = 3
-        elif key == 0 and self.List[0].direction != 0 and self.List[0].direction != 2:
+        elif key == 0 and self.List[0].direction != 2:
             self.List[0].direction = 0
-        elif key == 1 and self.List[0].direction != 1 and self.List[0].direction != 3:
+        elif key == 1 and self.List[0].direction != 3:
             self.List[0].direction = 1
-        elif key == 2 and self.List[0].direction != 0 and self.List[0].direction != 2:
+        elif key == 2 and self.List[0].direction != 0:
             self.List[0].direction = 2
         elif key == pygame.K_a:
             print(self.head.old_x)

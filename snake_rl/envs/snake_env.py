@@ -46,6 +46,7 @@ class SnakeEnv():
         return matrix
     
     def step(self, action):
+        print("step")
         d = dict()
         d['state'] = self.screenshot()
         self.snake.move(action)
@@ -61,7 +62,7 @@ class SnakeEnv():
                 reward = -1
                 done = True
             else:
-                #reward = -0.5
+                #reward = -0.5 
                 pass
         self.total_reward += reward
         d['action'] = action
@@ -75,16 +76,11 @@ class SnakeEnv():
     def get_state(self):
         return np.reshape(self.snake.board, (400, 1)).T / 5
 
-    def render(self, screen):
-        screen.fill((0, 0, 0))
+    def render(self):
+        self.screen.fill((0, 0, 0))
         self.food.render()
         self.snake.render()
         pygame.display.flip()
-        pygame.event.pump()
-        events = pygame.event.get()
-        for e in events:
-            if(e.type == pygame.QUIT):
-                sys.exit()
 
     def close(self):
         pygame.quit()

@@ -7,7 +7,6 @@ class Body:
     1 - right
     2 - down
     3 - left
-    4 - do nothing
     """
     def __init__(self, window, x, y, ahead):
         self.direction = 2
