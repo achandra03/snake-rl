@@ -25,7 +25,7 @@ class SnakeEnv():
         self.snake.board[x, y] = 5
 
     def __init__(self, screen):
-        self.action_space = np.array([0, 1, 2, 3, 4])
+        self.action_space = np.array([0, 1, 2, 3])
         self.state = None
         pygame.init()
         self.screen = screen
@@ -46,7 +46,6 @@ class SnakeEnv():
         return matrix
     
     def step(self, action):
-        print("step")
         d = dict()
         d['state'] = self.screenshot()
         self.snake.move(action)

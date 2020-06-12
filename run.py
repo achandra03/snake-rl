@@ -16,25 +16,29 @@ env = SnakeEnv(screen)
 done = False
 while not done:
   env.render()
+  pressed = False
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       break
     if event.type == pygame.KEYDOWN:
+      pressed = True
       done = False
       key = event.key
       if key == pygame.K_UP:
-        done = env.step(0)
+        done = env.step(0)['done']
       elif key == pygame.K_RIGHT:
-        done = env.step(1)
+        done = env.step(1)['done']
       elif key == pygame.K_DOWN:
-        done = env.step(2)
+        done = env.step(2)['done']
       elif key == pygame.K_LEFT:
-        done = env.step(3)
+        done = env.step(3)['done']
       elif key == pygame.K_a:
-        done = env.step(pygame.K_a)
-      if done['done'] == True:
-        pygame.quit()
-    env.render()
+        done = env.step(pygame.K_a)['done']
+  if not pressed:
+    done = env.step(env.snake.head.direction)['done']
+  if done == True:
+    pygame.quit()
+  env.render()
 
 
 
