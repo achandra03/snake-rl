@@ -19,7 +19,6 @@ class Snake:
             body.render()
     
     def update_board(self):
-        self.board = np.zeros((20, 20))
         self.board.fill(0.1)
         self.board[self.food_x, self.food_y] = 5
         for body in self.List:

@@ -1,5 +1,6 @@
 import snake_rl
 import pygame
+from pygame.locals import *
 import random
 from brain import Brain
 from snake_rl.envs.snake_env import SnakeEnv
@@ -10,9 +11,10 @@ from keras import losses
 import os
 
 (width, height) = (600, 600)
+flags = FULLSCREEN | DOUBLEBUF
 screen = pygame.display.set_mode((width, height))
 env = SnakeEnv(screen)
-
+clock = pygame.time.Clock()
 done = False
 while not done:
   env.render()
@@ -38,7 +40,8 @@ while not done:
     done = env.step(env.snake.head.direction)['done']
   if done == True:
     pygame.quit()
-  env.render()
+  clock.tick(20)
+  print(clock.get_fps())
 
 
 

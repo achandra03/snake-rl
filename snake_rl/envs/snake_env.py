@@ -12,16 +12,12 @@ class SnakeEnv():
 
     def create_food(self):
         x = random.randint(0, 19)
-        while x == self.snake.head.x:
-            x = random.randint(0, 19)
         y = random.randint(0, 19)
-        while y == self.snake.head.y:
-            y = random.randint(0, 19)
         self.food = Food(self.screen, x * 30, y * 30)
-        if(self.snake.board[x, y] == 1 or self.snake.board[x, y] == 2):
-            self.create_food()
-        else:
-            self.snake.update_food(x, y)
+        while(self.snake.board[x, y] == 1 or self.snake.board[x, y] == 2):
+            x = random.randint(0, 19)
+            y = random.randint(0, 19)
+        self.snake.update_food(x, y)
         self.snake.board[x, y] = 5
 
     def __init__(self, screen):
@@ -60,9 +56,6 @@ class SnakeEnv():
             if lost == 1:
                 reward = -1
                 done = True
-            else:
-                #reward = -0.5 
-                pass
         self.total_reward += reward
         d['action'] = action
         d['reward'] = reward
@@ -79,7 +72,8 @@ class SnakeEnv():
         self.screen.fill((0, 0, 0))
         self.food.render()
         self.snake.render()
-        pygame.display.flip()
+        for r in self.snake.List:
+            pygame.display.update(r.rect)
 
     def close(self):
         pygame.quit()
