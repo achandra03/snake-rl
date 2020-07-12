@@ -81,6 +81,46 @@ class Snake:
         elif action == 3:
             self.move(pygame.K_LEFT)
 
+    def body_front(self):
+        direction = self.head.direction
+        if direction == 0:
+            x = self.head.x / 30
+            head_y = (self.head.y / 30)
+            y = head_y - 1
+            while(y >= 0):
+                if(self.board[x][y] == 1):
+                    return (head_y - y) * 30
+                y = y - 1
+
+        elif direction == 1:
+            head_x = self.head.x / 30
+            x = head_x + 1
+            y = self.head.y / 30
+            while(x < 20):
+                if(self.board[x][y] == 1):
+                    return (x - head_x) * 30
+                x = x + 1
+
+        elif direction == 2:
+            x = self.head.x / 30
+            head_y = (self.head.y / 30)
+            y = head_y + 1
+            while(y < 20):
+                if(self.board[x][y] == 1):
+                    return (y - head_y) * 30
+                y = y + 1
+
+        elif direction == 3:
+            head_x = self.head.x / 30
+            x = head_x - 1
+            y = self.head.y / 30
+            while(x >= 0):
+                if(self.board[x][y] == 1):
+                    return (head_x - x) * 30
+                x = x - 1
+
+        return -1
+
 
         
         

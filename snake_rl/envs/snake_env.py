@@ -1,6 +1,6 @@
 from Game.Snake import Snake
 from Game.Food import Food
-
+import neat
 import pygame
 import random
 import numpy as np
@@ -13,10 +13,10 @@ class SnakeEnv():
     def create_food(self):
         x = random.randint(0, 19)
         y = random.randint(0, 19)
-        self.food = Food(self.screen, x * 30, y * 30)
         while(self.snake.board[x, y] == 1 or self.snake.board[x, y] == 2):
             x = random.randint(0, 19)
             y = random.randint(0, 19)
+        self.food = Food(self.screen, x * 30, y * 30)
         self.snake.update_food(x, y)
         self.snake.board[x, y] = 5
 
@@ -26,6 +26,7 @@ class SnakeEnv():
         pygame.init()
         self.screen = screen
         self.snake = Snake(self.screen)
+        self.snakes = []
         self.create_food()
         self.state = self.snake.board
         self.total_reward = 0
@@ -33,36 +34,19 @@ class SnakeEnv():
     def reset(self):
         self.__init__()
     
-    def screenshot(self):
-        data = pygame.image.tostring(self.screen, 'RGB')
-        image = Image.frombytes('RGB', (600, 600), data)
-        matrix = np.asarray(image.getdata(), dtype=np.uint8)
-        matrix = (matrix - 128)/(128 - 1)
-        matrix = np.reshape(matrix, (1, 600, 600, 3))
-        return matrix
     
-    def step(self, action):
-        d = dict()
-        d['state'] = self.screenshot()
-        self.snake.move(action)
-        reward = 0
+    
+    def move(self, snake, action):
+        snake.move(action)
         done = False
-        if(self.snake.head.x == self.food.x and self.snake.head.y == self.food.y):
+        if(snake.head.x == self.food.x and snake.head.y == self.food.y):
             self.create_food()
-            self.snake.add_body()
-            reward += 1
+            snake.add_body()
         else:
-            lost = self.snake.check_loss()
+            lost = snake.check_loss()
             if lost == 1:
-                reward = -1
                 done = True
-        self.total_reward += reward
-        d['action'] = action
-        d['reward'] = reward
-        self.state = self.snake.board
-        d['next_state'] = self.screenshot()
-        d['done'] = done
-        return d
+    
     
     
     def get_state(self):
@@ -77,6 +61,67 @@ class SnakeEnv():
 
     def close(self):
         pygame.quit()
+
+
+    def eval_genomes(genomes, config):
+        nets = []
+        snakes = []
+        ge = []
+
+        for g in genomes:
+            net = neat.nn.FeedForwardNetwork(g, config)
+            nets.append(net)
+            snakes.append(Snake(self.screen))
+            g.fitness = 0
+            ge.append(g)
         
-    def move(self, key):
-        self.snake.move(key)
+        run = True
+        #Main loop
+        while run and len(snakes) > 0:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    pygame.quit()
+                    quit()
+                    break
+
+            for x, snake in enumerate(snakes):
+                ge[x].fitness += 0.1
+
+                """
+                Inputs to the neural net:
+                Vertical distance from food to head
+                Horizontal distance from food to head
+                Vertical distance to nearest wall from head
+                Horizontal distance to nearest wall from head
+                Distance from head to body segment (default -1)
+                """
+
+                snake_x = snake.x
+                snake_y = snake.y
+                food_x = snake.food.x 
+                food_y = snake.food.y 
+
+                food_vert = snake_y - food_y
+                food_horz = snake_x - food_x
+                wall_vert = min(snake_y, 600 - snake_y)
+                wall_horz = min(snake_x, 600 - snake_x)
+                body_front = snake.body_front()
+
+                output = round(4 * nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front)), 0)
+                move(snake, output)
+
+                
+
+
+
+    def run():
+        config_file_path = os.path.dirname("/Users/arnav/Desktop/snake_rl/conf.txt")
+        config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation,config_file)
+        population = neat.Population(config)
+        population.add_reporter(neat.StdOutReporter(True))
+        stats = neat.StatisticsReporter()
+        population.add_reporter(stats)
+        best = population.run(eval_genomes, 50)
+        print('\nBest genome:\n{!s}'.format(best))

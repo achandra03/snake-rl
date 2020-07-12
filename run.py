@@ -9,11 +9,14 @@ from keras import models
 from keras.layers import Dense
 from keras import losses
 import os
+import neat
 
 (width, height) = (600, 600)
 flags = FULLSCREEN | DOUBLEBUF
 screen = pygame.display.set_mode((width, height))
 env = SnakeEnv(screen)
+"""
+For manually playing the game
 clock = pygame.time.Clock()
 done = False
 while not done:
@@ -41,7 +44,6 @@ while not done:
   if done == True:
     pygame.quit()
   clock.tick(20)
-  print(clock.get_fps())
-
+"""
 
 
