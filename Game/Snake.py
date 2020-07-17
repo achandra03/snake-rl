@@ -1,8 +1,20 @@
 import pygame
 from Game.Body import Body
+from Game.Food import Food
 import numpy as np
 
 class Snake:
+
+
+    def create_food(self):
+        x = random.randint(0, 19)
+        y = random.randint(0, 19)
+        while(self.board[x, y] == 1 or self.snake.board[x, y] == 2):
+            x = random.randint(0, 19)
+            y = random.randint(0, 19)
+        self.food = Food(self.window, x * 30, y * 30)
+        self.update_food(x, y)
+        self.board[x, y] = 5
 
     def __init__(self, window):
         self.head = Body(window, 0, 0, None)
@@ -11,10 +23,12 @@ class Snake:
         self.board = np.zeros((20, 20))
         self.board.fill(0.1)
         self.board[0, 0]= 2
+        self.food = create_food()
         self.food_x = 0
         self.food_y = 0
 
     def render(self):
+        self.food.render()
         for body in self.List:
             body.render()
     
@@ -42,11 +56,19 @@ class Snake:
             self.List[0].direction = 1
         elif key == 2 and self.List[0].direction != 0:
             self.List[0].direction = 2
-        elif key == pygame.K_a:
-            print(self.head.old_x)
-            print(self.head.old_y)
-            return
+        
+        done = False
+        ate_food = False
+        if(self.head.x == self.food.x and self.head.y == self.food.y):
+            self.create_food()
+            self.add_body()
+            ate_food = True
+        else:
+            lost = self.check_loss()
+            if lost == 1:
+                done = True
         self.update_board()
+        return {"Died": done, "Food": ate_food}
 
     def add_body(self):
         x = self.List[len(self.List) - 1].old_y
@@ -120,6 +142,8 @@ class Snake:
                 x = x - 1
 
         return -1
+
+
 
 
         

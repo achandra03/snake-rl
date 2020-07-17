@@ -1,6 +1,7 @@
 from Game.Snake import Snake
 from Game.Food import Food
 import neat
+import os
 import pygame
 import random
 import numpy as np
@@ -10,45 +11,19 @@ from PIL import Image
 
 class SnakeEnv():
 
-    def create_food(self):
-        x = random.randint(0, 19)
-        y = random.randint(0, 19)
-        while(self.snake.board[x, y] == 1 or self.snake.board[x, y] == 2):
-            x = random.randint(0, 19)
-            y = random.randint(0, 19)
-        self.food = Food(self.screen, x * 30, y * 30)
-        self.snake.update_food(x, y)
-        self.snake.board[x, y] = 5
 
     def __init__(self, screen):
         self.action_space = np.array([0, 1, 2, 3])
         self.state = None
         pygame.init()
         self.screen = screen
-        self.snake = Snake(self.screen)
-        self.snakes = []
-        self.create_food()
-        self.state = self.snake.board
+        self.snakes = [] 
         self.total_reward = 0
 
     def reset(self):
         self.__init__()
     
-    
-    
-    def move(self, snake, action):
-        snake.move(action)
-        done = False
-        if(snake.head.x == self.food.x and snake.head.y == self.food.y):
-            self.create_food()
-            snake.add_body()
-        else:
-            lost = snake.check_loss()
-            if lost == 1:
-                done = True
-    
-    
-    
+        
     def get_state(self):
         return np.reshape(self.snake.board, (400, 1)).T / 5
 
@@ -110,13 +85,22 @@ class SnakeEnv():
                 body_front = snake.body_front()
 
                 output = round(4 * nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front)), 0)
-                move(snake, output)
+                state = snake.move(output)
+                if state["Food"] == True:
+                    ge[snakes.index(snake)].fitness += 5
+
+                if state["Died"] == True:
+                    ge[snakes.index(snake)] -= 1
+                    nets.pop(snakes.index(snake))
+                    ge.pop(snakes.index(snake))
+                    snakes.pop(snakes.index(snake))
+
 
                 
 
 
 
-    def run():
+    def run(self):
         config_file_path = os.path.dirname("/Users/arnav/Desktop/snake_rl/conf.txt")
         config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation,config_file)
         population = neat.Population(config)

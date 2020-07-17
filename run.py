@@ -14,7 +14,6 @@ import neat
 (width, height) = (600, 600)
 flags = FULLSCREEN | DOUBLEBUF
 screen = pygame.display.set_mode((width, height))
-env = SnakeEnv(screen)
 """
 For manually playing the game
 clock = pygame.time.Clock()
@@ -46,4 +45,5 @@ while not done:
   clock.tick(20)
 """
 
-
+env = SnakeEnv(screen)
+env.run()
