@@ -38,22 +38,21 @@ class SnakeEnv():
         pygame.quit()
 
 
-    def eval_genomes(genomes, config):
+    def eval_genomes(self, genomes, config):
         nets = []
         snakes = []
         ge = []
 
-        for g in genomes:
-            net = neat.nn.FeedForwardNetwork(g, config)
+        for genome_id, genome in genomes:
+            genome.fitness = 0
+            net = neat.nn.FeedForwardNetwork.create(genome, config)
             nets.append(net)
             snakes.append(Snake(self.screen))
-            g.fitness = 0
-            ge.append(g)
+            ge.append(genome)
         
         run = True
         #Main loop
         while run and len(snakes) > 0:
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -73,8 +72,8 @@ class SnakeEnv():
                 Distance from head to body segment (default -1)
                 """
 
-                snake_x = snake.x
-                snake_y = snake.y
+                snake_x = snake.head.x
+                snake_y = snake.head.y
                 food_x = snake.food.x 
                 food_y = snake.food.y 
 
@@ -83,29 +82,26 @@ class SnakeEnv():
                 wall_vert = min(snake_y, 600 - snake_y)
                 wall_horz = min(snake_x, 600 - snake_x)
                 body_front = snake.body_front()
-
-                output = round(4 * nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front)), 0)
+                output = round(3 * nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front))[0], 0)
                 state = snake.move(output)
                 if state["Food"] == True:
                     ge[snakes.index(snake)].fitness += 5
 
                 if state["Died"] == True:
-                    ge[snakes.index(snake)] -= 1
+                    ge[snakes.index(snake)].fitness -= 1
                     nets.pop(snakes.index(snake))
                     ge.pop(snakes.index(snake))
                     snakes.pop(snakes.index(snake))
 
 
-                
-
-
-
-    def run(self):
-        config_file_path = os.path.dirname("/Users/arnav/Desktop/snake_rl/conf.txt")
-        config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation,config_file)
+    def run(self, config_file):
+        config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_file)
         population = neat.Population(config)
         population.add_reporter(neat.StdOutReporter(True))
         stats = neat.StatisticsReporter()
         population.add_reporter(stats)
-        best = population.run(eval_genomes, 50)
+        best = population.run(self.eval_genomes, 200)
         print('\nBest genome:\n{!s}'.format(best))
+        print(type(best))
+
+

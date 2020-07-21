@@ -1,4 +1,5 @@
 import pygame
+import random
 from Game.Body import Body
 from Game.Food import Food
 import numpy as np
@@ -9,12 +10,13 @@ class Snake:
     def create_food(self):
         x = random.randint(0, 19)
         y = random.randint(0, 19)
-        while(self.board[x, y] == 1 or self.snake.board[x, y] == 2):
+        while(self.board[x, y] == 1 or self.board[x, y] == 2):
             x = random.randint(0, 19)
             y = random.randint(0, 19)
-        self.food = Food(self.window, x * 30, y * 30)
+        food = Food(self.window, x * 30, y * 30)
         self.update_food(x, y)
         self.board[x, y] = 5
+        return food
 
     def __init__(self, window):
         self.head = Body(window, 0, 0, None)
@@ -23,9 +25,7 @@ class Snake:
         self.board = np.zeros((20, 20))
         self.board.fill(0.1)
         self.board[0, 0]= 2
-        self.food = create_food()
-        self.food_x = 0
-        self.food_y = 0
+        self.food = self.create_food()
 
     def render(self):
         self.food.render()
@@ -39,6 +39,12 @@ class Snake:
             body.move()
             x = body.y // 30
             y = body.x // 30
+            """
+            if(body is not self.head and (x == 20 or y == 20)):
+                print("body out of bounds")
+            elif(body is self.head and (x == 20 or y == 20)):
+                print("head out of bounds")
+            """
             if(body.ahead is None):
                 try:
                     self.board[x, y] = 2
@@ -56,7 +62,8 @@ class Snake:
             self.List[0].direction = 1
         elif key == 2 and self.List[0].direction != 0:
             self.List[0].direction = 2
-        
+            
+        self.update_board()
         done = False
         ate_food = False
         if(self.head.x == self.food.x and self.head.y == self.food.y):
@@ -67,7 +74,6 @@ class Snake:
             lost = self.check_loss()
             if lost == 1:
                 done = True
-        self.update_board()
         return {"Died": done, "Food": ate_food}
 
     def add_body(self):
@@ -106,8 +112,8 @@ class Snake:
     def body_front(self):
         direction = self.head.direction
         if direction == 0:
-            x = self.head.x / 30
-            head_y = (self.head.y / 30)
+            x = self.head.x // 30
+            head_y = (self.head.y // 30)
             y = head_y - 1
             while(y >= 0):
                 if(self.board[x][y] == 1):
@@ -115,17 +121,17 @@ class Snake:
                 y = y - 1
 
         elif direction == 1:
-            head_x = self.head.x / 30
+            head_x = self.head.x // 30
             x = head_x + 1
-            y = self.head.y / 30
+            y = self.head.y // 30
             while(x < 20):
                 if(self.board[x][y] == 1):
                     return (x - head_x) * 30
                 x = x + 1
 
         elif direction == 2:
-            x = self.head.x / 30
-            head_y = (self.head.y / 30)
+            x = self.head.x // 30
+            head_y = (self.head.y // 30)
             y = head_y + 1
             while(y < 20):
                 if(self.board[x][y] == 1):
@@ -133,9 +139,9 @@ class Snake:
                 y = y + 1
 
         elif direction == 3:
-            head_x = self.head.x / 30
+            head_x = self.head.x // 30
             x = head_x - 1
-            y = self.head.y / 30
+            y = self.head.y // 30
             while(x >= 0):
                 if(self.board[x][y] == 1):
                     return (head_x - x) * 30

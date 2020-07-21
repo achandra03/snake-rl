@@ -45,5 +45,8 @@ while not done:
   clock.tick(20)
 """
 
-env = SnakeEnv(screen)
-env.run()
+if __name__ == '__main__':
+    env = SnakeEnv(screen)
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, 'conf.txt')
+    env.run(config_path)
