@@ -7,10 +7,10 @@ import random
 import numpy as np
 import sys
 from PIL import Image
+import pickle
 
 
 class SnakeEnv():
-
 
     def __init__(self, screen):
         self.action_space = np.array([0, 1, 2, 3])
@@ -27,22 +27,28 @@ class SnakeEnv():
     def get_state(self):
         return np.reshape(self.snake.board, (400, 1)).T / 5
 
-    def render(self):
+    def render(self, snake):
         self.screen.fill((0, 0, 0))
-        self.food.render()
-        self.snake.render()
-        for r in self.snake.List:
-            pygame.display.update(r.rect)
+        snake.food.render()
+        snake.render()
+        pygame.display.flip()
+    
+    def step(self, snake, action):
+        snake.move(action)
+        self.render(snake)
 
     def close(self):
         pygame.quit()
 
 
     def eval_genomes(self, genomes, config):
+        global nets_g
+        nets_g = []
         nets = []
         snakes = []
+        global ge_g
+        ge_g = []
         ge = []
-
         for genome_id, genome in genomes:
             genome.fitness = 0
             net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -50,6 +56,8 @@ class SnakeEnv():
             snakes.append(Snake(self.screen))
             ge.append(genome)
         
+        ge_g = ge.copy()
+        nets_g = nets.copy()
         run = True
         #Main loop
         while run and len(snakes) > 0:
@@ -85,7 +93,7 @@ class SnakeEnv():
                 output = round(3 * nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front))[0], 0)
                 state = snake.move(output)
                 if state["Food"] == True:
-                    ge[snakes.index(snake)].fitness += 5
+                    ge[snakes.index(snake)].fitness += 1
 
                 if state["Died"] == True:
                     ge[snakes.index(snake)].fitness -= 1
@@ -102,6 +110,7 @@ class SnakeEnv():
         population.add_reporter(stats)
         best = population.run(self.eval_genomes, 200)
         print('\nBest genome:\n{!s}'.format(best))
-        print(type(best))
+        best_net = nets_g[ge_g.index(best)]
+        pickle.dump(best_net, open('best.pkl', 'wb'))
 
 

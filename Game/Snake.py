@@ -26,6 +26,7 @@ class Snake:
         self.board.fill(0.1)
         self.board[0, 0]= 2
         self.food = self.create_food()
+        self.done = False
 
     def render(self):
         self.food.render()
@@ -62,19 +63,17 @@ class Snake:
             self.List[0].direction = 1
         elif key == 2 and self.List[0].direction != 0:
             self.List[0].direction = 2
-            
         self.update_board()
-        done = False
         ate_food = False
         if(self.head.x == self.food.x and self.head.y == self.food.y):
-            self.create_food()
+            self.food = self.create_food()
             self.add_body()
             ate_food = True
         else:
             lost = self.check_loss()
             if lost == 1:
-                done = True
-        return {"Died": done, "Food": ate_food}
+                self.done = True
+        return {"Died": self.done, "Food": ate_food}
 
     def add_body(self):
         x = self.List[len(self.List) - 1].old_y
@@ -148,6 +147,21 @@ class Snake:
                 x = x - 1
 
         return -1
+
+    def get_input(self):
+        dict = {}
+        dict["snake_x"] = self.head.x
+        dict["snake_y"] = self.head.y
+        dict["food_x"] = self.food.x 
+        dict["food_y"] = self.food.y 
+
+        dict["food_vert"] = self.head.y - self.food.y
+        dict["food_horz"] = self.head.x - self.food.x
+        dict["wall_vert"] = min(self.head.y, 600 - self.head.y)
+        dict["wall_horz"] = min(self.head.x, 600 - self.head.x)
+        dict["body_front"] = self.body_front()
+        return dict
+
 
 
 
