@@ -12,39 +12,7 @@ import os
 import neat
 
 (width, height) = (600, 600)
-flags = FULLSCREEN | DOUBLEBUF
 screen = pygame.display.set_mode((width, height))
-"""
-For manually playing the game
-clock = pygame.time.Clock()
-done = False
-while not done:
-  env.render()
-  pressed = False
-  for event in pygame.event.get():
-    if event.type == pygame.QUIT:
-      break
-    if event.type == pygame.KEYDOWN:
-      pressed = True
-      done = False
-      key = event.key
-      if key == pygame.K_UP:
-        done = env.step(0)['done']
-      elif key == pygame.K_RIGHT:
-        done = env.step(1)['done']
-      elif key == pygame.K_DOWN:
-        done = env.step(2)['done']
-      elif key == pygame.K_LEFT:
-        done = env.step(3)['done']
-      elif key == pygame.K_a:
-        done = env.step(pygame.K_a)['done']
-  if not pressed:
-    done = env.step(env.snake.head.direction)['done']
-  if done == True:
-    pygame.quit()
-  clock.tick(20)
-"""
-
 if __name__ == '__main__':
     env = SnakeEnv(screen)
     local_dir = os.path.dirname(__file__)
