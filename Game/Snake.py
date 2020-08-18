@@ -40,12 +40,6 @@ class Snake:
             body.move()
             x = body.y // 30
             y = body.x // 30
-            """
-            if(body is not self.head and (x == 20 or y == 20)):
-                print("body out of bounds")
-            elif(body is self.head and (x == 20 or y == 20)):
-                print("head out of bounds")
-            """
             if(body.ahead is None):
                 try:
                     self.board[x, y] = 2

@@ -60,7 +60,7 @@ class SnakeEnv():
         nets_g = nets.copy()
         run = True
         #Main loop
-        while run and len(snakes) > 0:
+        while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -69,6 +69,8 @@ class SnakeEnv():
                     break
 
             for x, snake in enumerate(snakes):
+                if(snake.done):
+                    continue
                 ge[x].fitness += 0.1
 
                 """
@@ -90,16 +92,19 @@ class SnakeEnv():
                 wall_vert = min(snake_y, 600 - snake_y)
                 wall_horz = min(snake_x, 600 - snake_x)
                 body_front = snake.body_front()
-                output = round(3 * nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front))[0], 0)
+                output = np.argmax(nets[snakes.index(snake)].activate((food_vert, food_horz, wall_vert, wall_horz, body_front)))
                 state = snake.move(output)
                 if state["Food"] == True:
                     ge[snakes.index(snake)].fitness += 1
 
                 if state["Died"] == True:
                     ge[snakes.index(snake)].fitness -= 1
-                    nets.pop(snakes.index(snake))
-                    ge.pop(snakes.index(snake))
-                    snakes.pop(snakes.index(snake))
+                    #nets.pop(snakes.index(snake))
+                    #ge.pop(snakes.index(snake))
+                    #snakes.pop(snakes.index(snake))
+                all_done = [snake.done for snake in snakes]
+                if(False not in all_done):
+                    run = False
 
 
     def run(self, config_file):
