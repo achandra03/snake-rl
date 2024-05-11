@@ -40,6 +40,7 @@ for timestep in range(max_timesteps):
 		action = random.randint(0, 3)
 
 	(reward, terminal) = game.step(action)
+	game.render()
 	episode_reward += reward
 
 	next_frame = torch.tensor(game.get_frame())

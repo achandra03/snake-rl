@@ -9,11 +9,15 @@ class Net(nn.Module):
 	
 	def __init__(self, dim, action_size):
 		super(Net, self).__init__()
-		self.conv1 = nn.Conv2d(2, 4, kernel_size=6, stride=2, bias=False) 
-		self.conv2 = nn.Conv2d(4, 16, kernel_size=8, stride=4) 
-		self.flatten = 16 * 1 * 1
-		self.fc1 = nn.Linear(self.flatten, 512)
-		self.fc2 = nn.Linear(512, action_size)
+		self.conv1 = nn.Conv2d(in_channels=2, out_channels=128, kernel_size=3, stride=1) 
+		self.norm1 = nn.BatchNorm2d(128)
+		self.conv2 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, stride=1) 
+		self.norm2 = nn.BatchNorm2d(256)
+		self.conv3 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1)
+		self.flatten = 256 * 14 * 14
+		self.fc1 = nn.Linear(self.flatten, 100)
+		self.drop1 = nn.Dropout(0.25)
+		self.fc2 = nn.Linear(100, action_size)
 
 	def forward(self, x):
 		x = x.type(torch.FloatTensor)
@@ -21,9 +25,12 @@ class Net(nn.Module):
 		x = F.relu(x)
 		x = self.conv2(x)
 		x = F.relu(x)
+		x = self.conv3(x)
+		x = F.relu(x)
 		x = x.view(-1, self.flatten)
 		x = self.fc1(x)
 		x = F.relu(x)
+		x = self.drop1(x)
 		x = self.fc2(x)
 		return x
 

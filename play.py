@@ -6,7 +6,7 @@ import time
 
 g = Game()
 b = Brain(dim = g.dim, action_size = 4)
-b.load_model(os.path.join(os.path.dirname(__file__), 'modelv2'))
+b.load_model(os.path.join(os.path.dirname(__file__), 'model'))
 
 prev_frame = torch.tensor(g.get_frame())
 g.step(g.DOWN)

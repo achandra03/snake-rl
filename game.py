@@ -32,7 +32,7 @@ class Game():
 		self.snake[0]['y'] += self.dirs[self.direction]['y']
 
 		if(self.snake[0]['x'] < 0 or self.snake[0]['y'] < 0 or self.snake[0]['x'] >= self.dim or self.snake[0]['y'] >= self.dim): #crashes into wall
-			return (-1, 1)
+			return (-10, 1)
 	
 		reward = 0
 		terminal = 0
@@ -41,26 +41,28 @@ class Game():
 		new_dist = abs(self.snake[0]['x'] - self.food['x']) + abs(self.snake[0]['y'] - self.food['y'])
 		
 		if(self.snake[0]['x'] == self.food['x'] and self.snake[0]['y'] == self.food['y']): #eats food
-			reward += 1
+			reward = 10
 			self.snake.append(prev_position)
 			self.food = {'x': random.randint(0, self.dim - 1), 'y': random.randint(0, self.dim - 1)}
 			while(self.food in self.snake):
 				self.food = {'x': random.randint(0, self.dim - 1), 'y': random.randint(0, self.dim - 1)}
-		
+
+		else:
+			reward = -0.2
+
 		'''
 		elif(new_dist < old_dist): #snake gets closer to food
 			reward += 0.1
 		elif(new_dist > old_dist): #snake gets farther from food
 			reward -= 0.1
 		'''
-
 		for i in range(1, len(self.snake)):
 			tmp = self.snake[i]
 			self.snake[i] = prev_position
 			prev_position = tmp
 
 		if(self.snake[0] in self.snake[1:]): #crashes into itself
-			reward -= 1
+			reward = -10
 			terminal = 1
 
 		return (reward, terminal)
