@@ -9,6 +9,9 @@ from collections import deque
 epsilon_start = 0.99
 epsilon_final = 0.01
 epsilon_decay = 0.0001
+tau_start = 1.0
+tau_end = 0.01
+tau_decay = 0.99999
 lr = 1e-4
 batch_size = 32
 max_timesteps = int(1e8)
@@ -28,16 +31,14 @@ curr_frame = torch.tensor(game.get_frame())
 def get_epsilon(step):
 	return epsilon_final + (epsilon_start - epsilon_final) * np.exp(-epsilon_decay * step)
 
+def get_tau(step):
+	return max(tau_end, tau_start * (tau_decay ** step))
+
 moving_average = deque(maxlen = moving_average_length)
 
 for timestep in range(max_timesteps):
 	state = torch.stack([prev_frame, curr_frame])
-	action = 0
-	epsilon = get_epsilon(timestep)
-	if(epsilon < random.uniform(0, 1)):
-		action = brain.pick_action(state)
-	else:
-		action = random.randint(0, 3)
+	action = brain.pick_action_boltzmann(state, get_tau(timestep))
 
 	(reward, terminal) = game.step(action)
 	game.render()
