@@ -2,4 +2,4 @@
 
 To train the model yourself run `train.py` and to watch the current model play run `play.py`. 
 
-![Model playing](https://github.com/achandra03/snake-rl/blob/main/game_recordingv1.gif)
+![Model playing](https://github.com/achandra03/snake-rl/blob/main/game_recording.gif)
